@@ -1,0 +1,23 @@
+Package: add_narr_data
+Title: Adds NARR Variables Based on Date and 12 x 12 km Grid Cell
+Version: 0.0.0.9000
+Authors@R: c(
+            person("Erika", "Rasnick", email = "erika.rasnick@cchmc.org",
+                  role = c("aut", "cre")),
+            person("Cole", "Brokamp", role="aut"))
+Description: What the package does (one paragraph).
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+URL: http://geomarker.io/add_narr_data
+BugReports: https://github.com/geomarker-io/add_narr_data/issues
+Imports: 
+    dplyr (>= 0.8.4),
+    purrr (>= 0.3.3),
+    tidyr (>= 1.0.0),
+    fst (>= 0.9.2),
+    data.table (>= 1.12.2)
