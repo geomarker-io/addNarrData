@@ -34,6 +34,12 @@ read_narr_fst_join <- function(d, narr_variables) {
   d <- tidyr::unnest(d, cols = c(data, date_seq))
   d <- dplyr::select(d, row_index, narr_cell_number, start_date, end_date, date_seq)
 
+  master_start_date <- min(d$start_date)
+  master_end_date <- max(d$end_date)
+  master_date_seq <- seq.Date(from = master_start_date,
+                              to = master_end_date,
+                              by = 1)
+
   out <-
     fst::read_fst(
       path = "./narr.fst",
@@ -43,7 +49,7 @@ read_narr_fst_join <- function(d, narr_variables) {
       as.data.table = TRUE
     )
 
-  out <- purrr::map_dfr(d$date_seq, ~out[.(data.table::CJ(narr_cell_number, .x)), nomatch = 0L])
+  out <- out[.(data.table::CJ(narr_cell_number, master_date_seq)), nomatch = 0L]
 
   d <- dplyr::left_join(d, out, by = c('date_seq' = 'date'))
   d <- dplyr::ungroup(d)
