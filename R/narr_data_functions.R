@@ -1,6 +1,3 @@
-library(tidyverse)
-library(fst)
-
 .onAttach <- function(libname, pkgname) {
   if(!file.exists("./narr.fst")) {message("narr.fst must be present in current working directory")}
 }
@@ -15,27 +12,27 @@ get_narr_data <- function(d,
   if(!"start_date" %in% colnames(d)) {stop("input dataframe must have a column called 'start_date'")}
   if(!"end_date" %in% colnames(d)) {stop("input dataframe must have a column called 'end_date'")}
 
-  d <- d %>%
-    split(d$narr_cell_number)
+  d <- split(d, d$narr_cell_number)
 
-  return(map_dfr(d, ~read_narr_fst_join(.x, narr_variables)))
+  return(purrr::map_dfr(d, ~read_narr_fst_join(.x, narr_variables)))
 }
 
 
 read_narr_fst_join <- function(d, narr_variables) {
-  narr_cell_number <- unique(d$narr_cell_number)
+  d_orig <- d
 
+  narr_cell_number <- unique(d$narr_cell_number)
   narr_row_start <- ((narr_cell_number - 1) * 7305) + 1
   narr_row_end <- narr_cell_number * 7305
 
-  d <- d %>%
-    mutate(row_index = seq_len(nrow(d))) %>%
-    group_by(row_index) %>%
-    nest() %>%
-    mutate(date_seq = purrr::map(data, ~seq.Date(from = .x$start_date,
-                                                 to = .x$end_date,
-                                                 by = 1))) %>%
-    unnest(cols = c(data, date_seq))
+  d$row_index <- seq_len(nrow(d))
+  d <- dplyr::group_by(d, row_index)
+  d <- tidyr::nest(d)
+  d <- dplyr::mutate(d, date_seq = purrr::map(data, ~seq.Date(from = .x$start_date,
+                                                              to = .x$end_date,
+                                                              by = 1)))
+  d <- tidyr::unnest(d, cols = c(data, date_seq))
+  d <- dplyr::select(d, row_index, narr_cell_number, start_date, end_date, date_seq)
 
   out <-
     fst::read_fst(
@@ -46,15 +43,16 @@ read_narr_fst_join <- function(d, narr_variables) {
       as.data.table = TRUE
     )
 
-  out <- map_dfr(d$date_seq, ~out[.(data.table::CJ(narr_cell_number, .x)), nomatch = 0L])
+  out <- purrr::map_dfr(d$date_seq, ~out[.(data.table::CJ(narr_cell_number, .x)), nomatch = 0L])
 
-  d <- d %>%
-    left_join(out, by = c('date_seq' = 'date')) %>%
-    ungroup() %>%
-    select(-row_index) %>%
-    group_by(MED_REC, VisitDate, start_date, end_date) %>%
-    summarize_if(is.numeric, ~mean(., na.rm = T)) %>%
-    select(-narr_cell)
+  d <- dplyr::left_join(d, out, by = c('date_seq' = 'date'))
+  d <- dplyr::ungroup(d)
+  d <- dplyr::group_by(d, row_index, start_date, end_date)
+  d <- dplyr::summarize_if(d, is.numeric, ~mean(., na.rm = T))
+  d <- dplyr::select(d, -narr_cell, -narr_cell_number)
+
+  d <- dplyr::left_join(d_orig, d, by = c('start_date', 'end_date'))
+  d <- dplyr::select(d, -row_index)
 
   return(d)
 }
