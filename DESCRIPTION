@@ -1,4 +1,4 @@
-Package: add_narr_data
+Package: addNarrData
 Title: Adds NARR Variables Based on Date and 12 x 12 km Grid Cell
 Version: 0.0.0.9000
 Authors@R: c(
