@@ -1,4 +1,4 @@
-library(tidyverse)
+library(magrittr)
 source('./R/narr_data_functions.R')
 
 d <- tibble::tribble(
@@ -9,10 +9,11 @@ d <- tibble::tribble(
   96308, "2/25/19", 57121,
   78054, "9/20/17", 56773
 ) %>%
-  mutate(VisitDate = as.Date(VisitDate, format = '%m/%d/%y'),
-         start_date = VisitDate - lubridate::days(7),
-         end_date = VisitDate) %>%
-  rename(narr_cell_number = narr_cell)
+  dplyr::mutate(
+    VisitDate = as.Date(VisitDate, format = "%m/%d/%y"),
+    start_date = VisitDate - lubridate::days(7),
+    end_date = VisitDate
+  )
 
 get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
 
