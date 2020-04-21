@@ -1,39 +1,8 @@
-.onAttach <- function() {
+.onAttach <- function(libname, pkgname) { # these arguments have to be here
   if (!file.exists("./narr.fst")) {
-    message("narr.fst must be present in current working directory")
+    packageStartupMessage("narr.fst must be present in current working directory")
   }
 }
-
-#' get averaged NARR data for NARR cells and start and end dates
-#'
-#' @param d data.frame with columns 'narr_cell' , 'start_date', and 'end_date'
-#' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
-#'
-#' @return a data.frame identical to the input data.frame but with appended average NARR values
-#'
-#' @examples
-#' my_data <- data.frame(id = 1:3,
-#'     lat = c(39.19674, 39.12731,	39.28765),
-#'     lon = c(-84.58260, -84.52700, -84.51017))
-#'
-#' ecat_est <- calculate_ecat(my_data, return.LU.vars = FALSE)
-#' ecat_est <- calculate_ecat(my_data, return.LU.vars = TRUE)
-#' @export
-get_narr_data <- function(d,
-                          narr_variables = c(
-                            "hpbl", "vis", "uwnd.10m", "vwnd.10m",
-                            "air.2m", "rhum.2m", "prate", "pres.sfc"
-                          )) {
-
-  if(!"narr_cell" %in% colnames(d)) {stop("input dataframe must have a column called 'narr_cell'")}
-  if(!"start_date" %in% colnames(d)) {stop("input dataframe must have a column called 'start_date'")}
-  if(!"end_date" %in% colnames(d)) {stop("input dataframe must have a column called 'end_date'")}
-
-  d <- split(d, d$narr_cell)
-
-  return(purrr::map_dfr(d, ~read_narr_fst_join(.x, narr_variables)))
-}
-
 
 read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
   d_orig <- d_one
@@ -54,7 +23,7 @@ read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
 
   out <-
     fst::read_fst(
-      path = "./narr.fst",
+      path = paste0(fs::path_home(), "/Desktop/narr.fst"),
       from = narr_row_start,
       to = narr_row_end,
       columns = c("narr_cell", "date", narr_variables),
@@ -75,3 +44,33 @@ read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
     dplyr::select(-row_index)
 }
 
+#' get averaged NARR data for NARR cells and start and end dates
+#'
+#' @param d data.frame with columns 'narr_cell' , 'start_date', and 'end_date'
+#' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
+#'
+#' @return a data.frame identical to the input data.frame but with appended average NARR values
+#'
+#' @examples
+#' d <- data.frame(id = c(51981, 77553, 52284),
+#'                 narr_cell = c(56772, 56772, 57121),
+#'                 start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
+#'                 end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18")))
+#'
+#' get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
+#'
+#' @export
+get_narr_data <- function(d,
+                          narr_variables = c(
+                            "hpbl", "vis", "uwnd.10m", "vwnd.10m",
+                            "air.2m", "rhum.2m", "prate", "pres.sfc"
+                          )) {
+
+  if(!"narr_cell" %in% colnames(d)) {stop("input dataframe must have a column called 'narr_cell'")}
+  if(!"start_date" %in% colnames(d)) {stop("input dataframe must have a column called 'start_date'")}
+  if(!"end_date" %in% colnames(d)) {stop("input dataframe must have a column called 'end_date'")}
+
+  d <- split(d, d$narr_cell)
+
+  return(purrr::map_dfr(d, ~read_narr_fst_join(.x, narr_variables)))
+}
