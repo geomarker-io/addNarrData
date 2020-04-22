@@ -1,12 +1,6 @@
 #' @import data.table
 
-.onAttach <- function(libname, pkgname) { # these arguments have to be here
-  if (!file.exists("./narr.fst")) {
-    packageStartupMessage("narr.fst must be present in current working directory")
-  }
-}
-
-read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
+read_narr_fst_join <- function(d_one, narr_variables, narr_fst_filepath) {
   d_orig <- d_one
   d_orig$row_index <- seq_len(nrow(d_orig))
 
@@ -25,7 +19,7 @@ read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
 
   out <-
     fst::read_fst(
-      path = paste0(fs::path_home(), "/Desktop/narr.fst"),
+      path = narr_fst_filepath,
       from = narr_row_start,
       to = narr_row_end,
       columns = c("narr_cell", "date", narr_variables),
@@ -48,31 +42,81 @@ read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
 
 #' get averaged NARR data for NARR cells and start and end dates
 #'
-#' @param d data.frame with columns 'narr_cell' , 'start_date', and 'end_date'
+#' @param d data.frame with columns 'narr_cell', 'start_date', and 'end_date'
 #' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
+#' @param narr_fst_filepath manually specificy a file path to the narr.fst file; normally this would be left unset (defaults to NULL) to use narr.fst in the application data folder (or in the working directory)
 #'
 #' @return a data.frame identical to the input data.frame but with appended average NARR values
 #'
 #' @examples
-#' d <- data.frame(id = c(51981, 77553, 52284),
-#'                 narr_cell = c(56772, 56772, 57121),
-#'                 start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
-#'                 end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18")))
+#' if (FALSE) {
+#' d <- data.frame(
+#'   id = c(51981, 77553, 52284),
+#'   narr_cell = c(56772, 56772, 57121),
+#'   start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
+#'   end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18"))
+#' )
 #'
-#' get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
-#'
+#' get_narr_data(d, narr_variables = c("air.2m", "rhum.2m"))
+#' }
 #' @export
 get_narr_data <- function(d,
                           narr_variables = c(
                             "hpbl", "vis", "uwnd.10m", "vwnd.10m",
                             "air.2m", "rhum.2m", "prate", "pres.sfc"
-                          )) {
+                          ),
+                          narr_fst_filepath = NULL) {
+  if (is.null(narr_fst_filepath)) {
+    narr_fst_filepath <- narr_fst()
+  }
 
-  if(!"narr_cell" %in% colnames(d)) {stop("input dataframe must have a column called 'narr_cell'")}
-  if(!"start_date" %in% colnames(d)) {stop("input dataframe must have a column called 'start_date'")}
-  if(!"end_date" %in% colnames(d)) {stop("input dataframe must have a column called 'end_date'")}
+  if (!"narr_cell" %in% colnames(d)) {
+    stop("input dataframe must have a column called 'narr_cell'")
+  }
+  if (!"start_date" %in% colnames(d)) {
+    stop("input dataframe must have a column called 'start_date'")
+  }
+  if (!"end_date" %in% colnames(d)) {
+    stop("input dataframe must have a column called 'end_date'")
+  }
 
   d <- split(d, d$narr_cell)
 
-  return(purrr::map_dfr(d, ~read_narr_fst_join(.x, narr_variables)))
+  return(purrr::map_dfr(d, ~ read_narr_fst_join(.x, narr_variables, narr_fst_filepath = narr_fst_filepath)))
+}
+
+#' download narr.fst file to application specific directory so that it can be shared across R sessions and projects
+#' @export
+download_narr_fst <- function() {
+  narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData"), "narr.fst")
+
+  if (!file.exists(narr_fl_appdir)) {
+    message("This package requires a local copy of s3://geomarker/narr/narr.fst in order to lookup NARR values; it is 20 GB in size and will be downloaded to ", narr_fl_appdir, " so it can be shared across R sessions and projects.")
+    ans <- readline("Do you want to download this now (Y/n)? ")
+    if (!ans %in% c("", "y", "Y")) stop("aborted", call. = FALSE)
+
+    fs::dir_create(rappdirs::user_data_dir("addNarrdata"))
+    utils::download.file(url = "https://geomarker.s3.us-east-2.amazonaws.com/narr/narr.fst",
+                         destfile = narr_fl_appdir)
+  }
+}
+
+
+#' checks for and returns filepath to narr.fst file in application-specific site data directory or current working directory
+#' if not found, fails with suggestion to run download_narr_fst()
+narr_fst <- function() {
+  narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData"), "narr.fst")
+  narr_fl_wd <- fs::path(getwd(), "narr.fst")
+
+  if (file.exists(narr_fl_wd)) {
+    message("using narr.fst file at ", narr_fl_wd)
+    return(invisible(narr_fl_wd))
+  }
+
+  if (file.exists(narr_fl_appdir)) {
+    message("using narr.fst file at ", narr_fl_appdir)
+    return(invisible(narr_fl_appdir))
+  }
+
+  stop("narr.fst file not found at\n    ", narr_fl_appdir, "\n    or at\n    ", narr_fl_wd, "\n please call download_narr_fst() to download this file", call. = FALSE)
 }
