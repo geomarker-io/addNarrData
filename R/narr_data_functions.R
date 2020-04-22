@@ -1,3 +1,5 @@
+#' @import data.table
+
 .onAttach <- function(libname, pkgname) { # these arguments have to be here
   if (!file.exists("./narr.fst")) {
     packageStartupMessage("narr.fst must be present in current working directory")
@@ -31,7 +33,7 @@ read_narr_fst_join <- function(d_one = d[[1]], narr_variables) {
     )
 
   # subset to all dates needed for the narr cell number
-  out <- out[.(data.table::CJ(narr_cell, unique(d_one$date))), nomatch = 0L]
+  out <- out[list(data.table::CJ(narr_cell, unique(d_one$date))), nomatch = 0L]
 
   d_one <- dplyr::left_join(d_one, out, by = c("date", "narr_cell"))
 

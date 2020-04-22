@@ -2,4 +2,5 @@
 
 export("%>%")
 export(get_narr_data)
+import(data.table)
 importFrom(magrittr,"%>%")
