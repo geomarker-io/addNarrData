@@ -4,13 +4,19 @@
 \alias{get_narr_data}
 \title{get averaged NARR data for NARR cells and start and end dates}
 \usage{
-get_narr_data(d, narr_variables = c("hpbl", "vis", "uwnd.10m",
-  "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc"))
+get_narr_data(
+  d,
+  narr_variables = c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m",
+    "prate", "pres.sfc"),
+  narr_fst_filepath = NULL
+)
 }
 \arguments{
-\item{d}{data.frame with columns 'narr_cell' , 'start_date', and 'end_date'}
+\item{d}{data.frame with columns 'narr_cell', 'start_date', and 'end_date'}
 
 \item{narr_variables}{a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")}
+
+\item{narr_fst_filepath}{manually specificy a file path to the narr.fst file; normally this would be left unset (defaults to NULL) to use narr.fst in the application data folder (or in the working directory)}
 }
 \value{
 a data.frame identical to the input data.frame but with appended average NARR values
@@ -19,11 +25,14 @@ a data.frame identical to the input data.frame but with appended average NARR va
 get averaged NARR data for NARR cells and start and end dates
 }
 \examples{
-d <- data.frame(id = c(51981, 77553, 52284),
-                narr_cell = c(56772, 56772, 57121),
-                start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
-                end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18")))
+if (FALSE) {
+d <- data.frame(
+  id = c(51981, 77553, 52284),
+  narr_cell = c(56772, 56772, 57121),
+  start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
+  end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18"))
+)
 
-get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
-
+get_narr_data(d, narr_variables = c("air.2m", "rhum.2m"))
+}
 }

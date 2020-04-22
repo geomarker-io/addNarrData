@@ -23,5 +23,7 @@ Imports:
     data.table (>= 1.12.2),
     magrittr,
     fs (>= 1.3.1),
-    tidyselect (>= 1.0.0)
-RoxygenNote: 6.1.1
+    tidyselect (>= 1.0.0),
+    rappdirs,
+    utils
+RoxygenNote: 7.1.0
