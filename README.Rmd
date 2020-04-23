@@ -35,8 +35,6 @@ The NARR values are stored in `narr.fst` (20 GB in size), which can either be lo
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
-
 ```{r example}
 library(addNarrData)
 library(magrittr)
@@ -54,6 +52,8 @@ d <- tibble::tribble(
     start_date = VisitDate - lubridate::days(7),
     end_date = VisitDate
   )
+
+download_narr_fst()
 
 get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
 ```

@@ -16,17 +16,24 @@ cell) and `start_date` and `end_date`.
 Install the development version from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("geomarker-io/addNarrData")
+# install.packages("devtools")
+devtools::install_github("geomarker-io/addNarrData")
 ```
+
+### NARR database file
+
+The NARR values are stored in `narr.fst` (20 GB in size), which can
+either be located in the working directory, or preferably within the
+platform-specific user data directory so it can be shared across R
+sessions and projects. If needed, you will be prompted to run
+`download_narr_fst()` the first time you call `get_narr_data()`. This 20
+GB file is a large file to download, but will only need to be done once
+per user and computer.
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
-
 ``` r
 library(addNarrData)
-#> narr.fst must be present in current working directory
 library(magrittr)
 
 d <- tibble::tribble(
@@ -43,7 +50,10 @@ d <- tibble::tribble(
     end_date = VisitDate
   )
 
+download_narr_fst()
+
 get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
+#> using narr.fst file at /Users/RASV5G/Library/Application Support/addNarrdata/narr.fst
 #> # A tibble: 5 x 7
 #>      id VisitDate  narr_cell start_date end_date   air.2m rhum.2m
 #>   <dbl> <date>         <dbl> <date>     <date>      <dbl>   <dbl>

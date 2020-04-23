@@ -4,12 +4,9 @@
 \alias{get_narr_data}
 \title{get averaged NARR data for NARR cells and start and end dates}
 \usage{
-get_narr_data(
-  d,
-  narr_variables = c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m",
-    "prate", "pres.sfc"),
-  narr_fst_filepath = NULL
-)
+get_narr_data(d, narr_variables = c("hpbl", "vis", "uwnd.10m",
+  "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc"),
+  narr_fst_filepath = NULL)
 }
 \arguments{
 \item{d}{data.frame with columns 'narr_cell', 'start_date', and 'end_date'}
