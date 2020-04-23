@@ -16,8 +16,8 @@ cell) and `start_date` and `end_date`.
 Install the development version from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("geomarker-io/addNarrData")
+# install.packages("remotes")
+remotes::install_github("geomarker-io/addNarrData")
 ```
 
 ### NARR database file
