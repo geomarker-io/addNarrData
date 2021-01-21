@@ -5,8 +5,8 @@ read_narr_fst_join <- function(d_one, narr_variables, narr_fst_filepath) {
   d_orig$row_index <- seq_len(nrow(d_orig))
 
   narr_cell <- unique(d_one$narr_cell)
-  narr_row_start <- ((narr_cell - 1) * 7305) + 1
-  narr_row_end <- narr_cell * 7305
+  narr_row_start <- ((narr_cell - 1) * 7671) + 1
+  narr_row_end <- narr_cell * 7671
 
   d_one <-
     d_one %>%
