@@ -90,14 +90,19 @@ get_narr_data <- function(d,
 download_narr_fst <- function() {
   narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData"), "narr.fst")
 
-  if (!file.exists(narr_fl_appdir)) {
-    message("This package requires a local copy of s3://geomarker/narr/narr.fst in order to lookup NARR values; it is 20 GB in size and will be downloaded to ", narr_fl_appdir, " so it can be shared across R sessions and projects.")
+  if (!fs::file_exists(narr_fl_appdir)) {
+    cli::cli_alert_info("This package requires a local copy of s3://geomarker/narr/narr.fst in order to lookup NARR values; it is > 22 GB in size and will be downloaded to ",
+                        narr_fl_appdir, " so it can be shared across R sessions and projects.")
     ans <- readline("Do you want to download this now (Y/n)? ")
     if (!ans %in% c("", "y", "Y")) stop("aborted", call. = FALSE)
 
     fs::dir_create(rappdirs::user_data_dir("addNarrdata"))
-    utils::download.file(url = "https://geomarker.s3.us-east-2.amazonaws.com/narr/narr.fst",
-                         destfile = narr_fl_appdir)
+    withr::with_envvar(new = c(
+      "AWS_ACCESS_KEY_ID" = NA,
+      "AWS_SECRET_ACCESS_KEY" = NA
+    ), {
+      s3::s3_get('s3://geomarker/narr/narr.fst', download_folder = rappdirs::user_data_dir("addNarrdata"))
+    })
   }
 }
 
@@ -105,8 +110,8 @@ download_narr_fst <- function() {
 #' checks for and returns filepath to narr.fst file in application-specific site data directory or current working directory
 #' if not found, fails with suggestion to run download_narr_fst()
 narr_fst <- function() {
-  narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData"), "narr.fst")
-  narr_fl_wd <- fs::path(getwd(), "narr.fst")
+  narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData/geomarker/narr"), "narr.fst")
+  narr_fl_wd <- fs::path(getwd(), "/geomarker/narr/narr.fst")
 
   if (file.exists(narr_fl_wd)) {
     message("using narr.fst file at ", narr_fl_wd)
