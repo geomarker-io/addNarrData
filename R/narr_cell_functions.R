@@ -48,8 +48,10 @@ get_narr_cell_numbers <- function(d) {
     sf::st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
     sf::st_transform(crs = raster::crs(r_narr_empty())) # reproject points into NARR projection for overlay
 
+  coords <- as.matrix(sf::st_coordinates(d_out))
+
   d_out <- d_out %>%
-    dplyr::mutate(narr_cell = raster::cellFromXY(r_narr_empty(), sf::as_Spatial(d_out)))
+    dplyr::mutate(narr_cell = raster::cellFromXY(r_narr_empty(), coords))
 
   d_out <- d_out %>%
     tidyr::unnest(.rows) %>%
