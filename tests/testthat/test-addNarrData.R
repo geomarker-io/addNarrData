@@ -1,29 +1,30 @@
 d_input <- function() {
-  tibble::tribble(
-    ~id, ~VisitDate, ~narr_cell,
-    51981, "3/8/17", 56772,
-    77553, "2/6/12", 56772,
-    52284, "6/18/13", 57121,
-    96308, "2/25/19", 57121,
-    78054, "9/20/17", 56773
+  tibble::tibble(
+  id = c('1a', '2b', '3c'),
+  visit_date = c("3/8/17", "2/6/12", "6/18/20"),
+  lat = c(39.19674, 39.19674, 39.48765),
+  lon = c(-84.582601, -84.582601, -84.610173)
   ) %>%
-    dplyr::mutate(
-      VisitDate = as.Date(VisitDate, format = "%m/%d/%y"),
-      start_date = VisitDate - lubridate::days(7),
-      end_date = VisitDate
-    )
+  dplyr::mutate(
+    visit_date = as.Date(visit_date, format = "%m/%d/%y"),
+    start_date = visit_date - lubridate::days(7), # weekly average
+    end_date = visit_date
+  )
 }
 
 d_output <- function() {
   d_input() %>%
-    dplyr::mutate(air.2m = c(279.1179, 279.1572, 294.1814, 296.8004, 277.0919),
-           rhum.2m = c(70.18391, 81.42355, 76.55719, 76.65743, 73.23998))
+    dplyr::mutate(air.2m = c(292.1765, 279.1179, 279.1572),
+           rhum.2m = c(70.95600, 70.18391, 81.42355))
 }
 
 test_that("addNarrData adds temp and humidity", {
-  d <- get_narr_data(d_input(),
-                     narr_variables = c('air.2m', 'rhum.2m'),
-                     narr_fst_filepath = )
+  d_narr_cell <- get_narr_cell_numbers(d_input())
+
+  download_narr_fst()
+
+  d <- get_narr_data(d_narr_cell,
+                     narr_variables = c('air.2m', 'rhum.2m'))
   expect_equal(
     d$air.2m,
     d_output()$air.2m,
