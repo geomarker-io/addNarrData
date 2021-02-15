@@ -10,8 +10,8 @@ status](https://github.com/geomarker-io/addNarrData/workflows/R-CMD-check/badge.
 <!-- badges: end -->
 
 The goal of addNarrData is to add average NARR weather varaibles to your
-data based on `narr_cell` (an identifier for a 12 x 12 km NARR grid
-cell) and `start_date` and `end_date`.
+geocoded data by matching coordinates to a `narr_cell` (an identifier for 
+a 12 x 12 km NARR grid cell) and `start_date` and `end_date`.
 
 ## Installation
 
@@ -28,7 +28,7 @@ The NARR values are stored in `narr.fst` (20 GB in size), which can
 either be located in the working directory, or preferably within the
 platform-specific user data directory so it can be shared across R
 sessions and projects. If needed, you will be prompted to run
-`download_narr_fst()` the first time you call `get_narr_data()`. This 20
+`download_narr_fst()` the first time you call `get_narr_data()`. This 22
 GB file is a large file to download, but will only need to be done once
 per user and computer.
 
