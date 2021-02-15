@@ -2,6 +2,7 @@
 
 export("%>%")
 export(download_narr_fst)
+export(get_narr_cell_numbers)
 export(get_narr_data)
 import(data.table)
 importFrom(magrittr,"%>%")

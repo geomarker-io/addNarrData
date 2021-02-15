@@ -34,34 +34,41 @@ per user and computer.
 
 ## Example
 
+Get NARR cell numbers.
+
 ``` r
 library(addNarrData)
 library(magrittr)
 
-d <- tibble::tribble(
-  ~id, ~VisitDate, ~narr_cell,
-  51981, "3/8/17", 56772,
-  77553, "2/6/12", 56772,
-  52284, "6/18/13", 57121,
-  96308, "2/25/19", 57121,
-  78054, "9/20/17", 56773
+d <- tibble::tibble(
+  id = c('1a', '2b', '3c'),
+  visit_date = c("3/8/17", "2/6/12", "6/18/20"),
+  lat = c(39.19674, 39.19674, 39.48765),
+  lon = c(-84.582601, -84.582601, -84.610173)
 ) %>%
   dplyr::mutate(
-    VisitDate = as.Date(VisitDate, format = "%m/%d/%y"),
-    start_date = VisitDate - lubridate::days(7),
-    end_date = VisitDate
+    visit_date = as.Date(visit_date, format = "%m/%d/%y"),
+    start_date = visit_date - lubridate::days(7), # weekly average
+    end_date = visit_date
   )
 
-download_narr_fst()
+d_narr_cell <- get_narr_cell_numbers(d)
+```
 
-get_narr_data(d, narr_variables = c('air.2m', 'rhum.2m'))
-#> using narr.fst file at /Users/RASV5G/Library/Application Support/addNarrdata/narr.fst
-#> # A tibble: 5 x 7
-#>      id VisitDate  narr_cell start_date end_date   air.2m rhum.2m
-#>   <dbl> <date>         <dbl> <date>     <date>      <dbl>   <dbl>
-#> 1 51981 2017-03-08     56772 2017-03-01 2017-03-08   279.    70.2
-#> 2 77553 2012-02-06     56772 2012-01-30 2012-02-06   279.    81.4
-#> 3 78054 2017-09-20     56773 2017-09-13 2017-09-20   294.    76.6
-#> 4 52284 2013-06-18     57121 2013-06-11 2013-06-18   297.    76.7
-#> 5 96308 2019-02-25     57121 2019-02-18 2019-02-25   277.    73.2
+Add NARR data.
+
+``` r
+download_narr_fst()
+```
+
+``` r
+get_narr_data(d_narr_cell, narr_variables = c('air.2m', 'rhum.2m'))
+#> using narr.fst file at ~/Library/Application Support/addNarrData/geomarker/narr/narr.fst
+#> # A tibble: 3 x 9
+#>   id    visit_date   lat   lon start_date end_date   narr_cell air.2m
+#>   <chr> <date>     <dbl> <dbl> <date>     <date>         <dbl>  <dbl>
+#> 1 3c    2020-06-18  39.5 -84.6 2020-06-11 2020-06-18     56423   292.
+#> 2 1a    2017-03-08  39.2 -84.6 2017-03-01 2017-03-08     56772   279.
+#> 3 2b    2012-02-06  39.2 -84.6 2012-01-30 2012-02-06     56772   279.
+#> # … with 1 more variable: rhum.2m <dbl>
 ```
