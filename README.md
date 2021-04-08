@@ -13,6 +13,20 @@ The goal of addNarrData is to add average NARR weather varaibles to your
 geocoded data by matching coordinates to a `narr_cell` (an identifier for 
 a 12 x 12 km NARR grid cell) and `start_date` and `end_date`.
 
+NARR Data Dictionary
+| Variable Name | Description|
+| :-- | :-- |
+| hpbl | Planetary Boundary Layer Height |
+| vis | Visibility |
+| uwnd.10m | U Wind Speed at 10m |
+| vwnd.10m | V Wind Speed at 10m |
+| air.2m | Air Temperature at 2m |
+| rhum.2m | Humidity at 2m |
+| prate | Precipitation Rate |
+| pres.sfc | Surface Pressure |
+
+More information is available at the [NOAA](https://www.ncdc.noaa.gov/sites/default/files/attachments/ncdc-narrdsi-6175-final.pdf) website.
+
 ## Installation
 
 Install the development version from [GitHub](https://github.com/) with:
@@ -60,22 +74,6 @@ Add NARR data.
 ``` r
 download_narr_fst()
 ```
-
-NARR Data Dictionary
-| Variable Name | Description|
-| :-- | :-- |
-| hpbl | Planetary Boundary Layer Height |
-| vis | Visibility |
-| uwnd.10m | U Wind Speed at 10m |
-| vwnd.10m | V Wind Speed at 10m |
-| air.2m | Air Temperature at 2m |
-| rhum.2m | Humidity at 2m |
-| prate | Precipitation Rate |
-| pres.sfc | Surface Pressure |
-
-More information is available at the [NOAA](https://www.ncdc.noaa.gov/sites/default/files/attachments/ncdc-narrdsi-6175-final.pdf) website.
-
-
 
 ``` r
 get_narr_data(d_narr_cell, narr_variables = c('air.2m', 'rhum.2m'))
