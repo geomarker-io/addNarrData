@@ -61,6 +61,22 @@ Add NARR data.
 download_narr_fst()
 ```
 
+NARR Data Dictionary
+| Variable Name | Description|
+| :-- | :-- |
+| hpbl | Planetary Boundary Layer Height |
+| vis | Visibility |
+| uwnd.10m | U Wind Speed at 10m |
+| vwnd.10m | V Wind Speed at 10m |
+| air.2m | Air Temperature at 2m |
+| rhum.2m | Humidity at 2m |
+| prate | Precipitation Rate |
+| pres.sfc | Surface Pressure |
+
+More information is available at the [NOAA](https://www.ncdc.noaa.gov/sites/default/files/attachments/ncdc-narrdsi-6175-final.pdf) website.
+
+
+
 ``` r
 get_narr_data(d_narr_cell, narr_variables = c('air.2m', 'rhum.2m'))
 #> using narr.fst file at ~/Library/Application Support/addNarrData/geomarker/narr/narr.fst
