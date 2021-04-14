@@ -37,6 +37,6 @@ Imports:
     dht,
     glue (>= 1.4.2)
 Remotes:
-    geomarker-io/s3
+    geomarker-io/s3,
     degauss-org/dht
 RoxygenNote: 7.1.1
