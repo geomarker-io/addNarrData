@@ -30,13 +30,13 @@ Imports:
     rappdirs,
     utils,
     cli (>= 2.3.0),
-    s3 (>= 0.2.4),
+    s3 (>= 0.3.1),
     withr (>= 2.2.0),
     raster (>= 3.4-5),
     sf (>= 0.9-7),
     dht,
     glue (>= 1.4.2)
 Remotes:
-    geomarker-io/s3,
-    degauss-org/dht
+  degauss-org/dht,
+  geomarker-io/s3
 RoxygenNote: 7.1.1
