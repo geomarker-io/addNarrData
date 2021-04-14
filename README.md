@@ -9,9 +9,23 @@
 status](https://github.com/geomarker-io/addNarrData/workflows/R-CMD-check/badge.svg)](https://github.com/geomarker-io/addNarrData/actions)
 <!-- badges: end -->
 
-The goal of addNarrData is to add average NARR weather varaibles to data
-based on `narr_cell` (an identifier for a 12 x 12 km NARR grid cell) and
-`start_date` and `end_date`.
+The goal of addNarrData is to add daily NARR weather varaibles to
+geocoded data by matching coordinates to a `narr_cell` (an identifier for 
+a 12 x 12 km NARR grid cell) and `start_date` and `end_date`.
+
+NARR Data Dictionary
+| Variable Name | Description|
+| :-- | :-- |
+| hpbl | Planetary Boundary Layer Height |
+| vis | Visibility |
+| uwnd.10m | U Wind Speed at 10m |
+| vwnd.10m | V Wind Speed at 10m |
+| air.2m | Air Temperature at 2m |
+| rhum.2m | Humidity at 2m |
+| prate | Precipitation Rate |
+| pres.sfc | Surface Pressure |
+
+More information is available at the [NOAA](https://www.ncdc.noaa.gov/sites/default/files/attachments/ncdc-narrdsi-6175-final.pdf) website.
 
 ## Installation
 
