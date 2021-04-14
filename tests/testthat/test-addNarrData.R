@@ -43,4 +43,3 @@ test_that("addNarrData adds temp and humidity", {
     tolerance = 0.0004
   )
 })
-

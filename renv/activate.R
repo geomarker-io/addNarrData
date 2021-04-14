@@ -167,7 +167,7 @@ local({
   }
   
   renv_bootstrap_download_cran_latest_find <- function(version) {
-  
+
     # check whether binaries are supported on this system
     binary <-
       getOption("renv.bootstrap.binary", default = TRUE) &&

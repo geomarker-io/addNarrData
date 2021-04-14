@@ -59,4 +59,3 @@ get_narr_data <- function(d,
 
   return(purrr::map_dfr(d_split, ~ download_join_chunks(.x, narr_variables)))
 }
-
