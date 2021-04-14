@@ -1,50 +1,27 @@
 #' @import data.table
 
-read_narr_fst_join <- function(d_one, narr_variables, narr_fst_filepath) {
-  d_orig <- d_one
-  d_orig$row_index <- seq_len(nrow(d_orig))
+read_join_chunks <- function(d_one, narr_chunk_path) {
+  message('reading in ', narr_chunk_path, ' and joining to data...')
+  narr_chunk <- fst::read_fst(narr_chunk_path, as.data.table = TRUE)
+  d_out <- merge(data.table::as.data.table(d_one), narr_chunk, by = c("narr_cell", "date"))
+  remove(narr_chunk)
+  return(d_out)
+}
 
-  narr_cell <- unique(d_one$narr_cell)
-  narr_row_start <- ((narr_cell - 1) * 7671) + 1
-  narr_row_end <- narr_cell * 7671
-
-  d_one <-
-    d_one %>%
-    dplyr::mutate(row_index = seq_len(nrow(d_one))) %>%
-    dplyr::group_by(row_index) %>%
-    tidyr::nest() %>%
-    dplyr::mutate(date_seq = purrr::map(data, ~ seq.Date(.$start_date, .$end_date, by = 1))) %>%
-    tidyr::unnest(cols = c(data, date_seq)) %>%
-    dplyr::select(row_index, narr_cell, date = date_seq)
-
-  out <-
-    fst::read_fst(
-      path = narr_fst_filepath,
-      from = narr_row_start,
-      to = narr_row_end,
-      columns = c("narr_cell", "date", narr_variables),
-      as.data.table = TRUE
-    )
-
-  # subset to all dates needed for the narr cell number
-  out <- out[list(data.table::CJ(narr_cell, unique(d_one$date))), nomatch = 0L]
-
-  d_one <- dplyr::left_join(d_one, out, by = c("date", "narr_cell"))
-
-  d_out <-
-    d_one %>%
-    dplyr::group_by(row_index) %>%
-    dplyr::summarize_at(tidyselect::all_of(narr_variables), mean, na.rm = TRUE)
-
-  dplyr::left_join(d_orig, d_out, by = "row_index") %>%
-    dplyr::select(-row_index)
+download_join_chunks <- function(d_one, narr_product) {
+  narr_chunk <- unique(d_one$narr_chunk)
+  message('downloading narr fst chunk files for chunk number ', narr_chunk, '...')
+  narr_chunk_path <- glue::glue("s3://geomarker/narr/narr_chunk_fst/narr_chunk_{narr_chunk}_{narr_product}.fst") %>%
+    s3::s3_get_files()
+  d_narr_chunk <- purrr::map(narr_chunk_path$file_path, ~read_join_chunks(d_one, .x))
+  d_narr_chunk <- purrr::reduce(d_narr_chunk, dplyr::left_join)
+  return(tibble::as_tibble(d_narr_chunk))
 }
 
 #' get averaged NARR data for NARR cells and start and end dates
 #'
 #' @param d data.frame with columns 'narr_cell', 'start_date', and 'end_date'
 #' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
-#' @param narr_fst_filepath manually specificy a file path to the narr.fst file; normally this would be left unset (defaults to NULL) to use narr.fst in the application data folder (or in the working directory)
 #'
 #' @return a data.frame identical to the input data.frame but with appended average NARR values
 #'
@@ -63,12 +40,8 @@ read_narr_fst_join <- function(d_one, narr_variables, narr_fst_filepath) {
 get_narr_data <- function(d,
                           narr_variables = c(
                             "hpbl", "vis", "uwnd.10m", "vwnd.10m",
-                            "air.2m", "rhum.2m", "prate", "pres.sfc"
-                          ),
-                          narr_fst_filepath = NULL) {
-  if (is.null(narr_fst_filepath)) {
-    narr_fst_filepath <- narr_fst()
-  }
+                            "air.2m", "rhum.2m", "prate", "pres.sfc")
+                          ) {
 
   if (!"narr_cell" %in% colnames(d)) {
     stop("input dataframe must have a column called 'narr_cell'")
@@ -80,48 +53,10 @@ get_narr_data <- function(d,
     stop("input dataframe must have a column called 'end_date'")
   }
 
-  d <- split(d, d$narr_cell)
+  d$narr_chunk <- d$narr_cell %/% 10000
+  d <- dht::expand_dates(d, by = 'day')
+  d_split <- split(d, d$narr_chunk)
 
-  return(purrr::map_dfr(d, ~ read_narr_fst_join(.x, narr_variables, narr_fst_filepath = narr_fst_filepath)))
+  return(purrr::map_dfr(d_split, ~ download_join_chunks(.x, narr_variables)))
 }
 
-#' download narr.fst file to application specific directory so that it can be shared across R sessions and projects
-#' @export
-download_narr_fst <- function() {
-  narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData"), "narr.fst")
-
-  if (!fs::file_exists(narr_fl_appdir)) {
-    cli::cli_alert_info("This package requires a local copy of s3://geomarker/narr/narr.fst in order to lookup NARR values; it is > 22 GB in size and will be downloaded to ",
-                        narr_fl_appdir, " so it can be shared across R sessions and projects.")
-    ans <- readline("Do you want to download this now (Y/n)? ")
-    if (!ans %in% c("", "y", "Y")) stop("aborted", call. = FALSE)
-
-    fs::dir_create(rappdirs::user_data_dir("addNarrdata"))
-    withr::with_envvar(new = c(
-      "AWS_ACCESS_KEY_ID" = NA,
-      "AWS_SECRET_ACCESS_KEY" = NA
-    ), {
-      s3::s3_get('s3://geomarker/narr/narr.fst', download_folder = rappdirs::user_data_dir("addNarrdata"))
-    })
-  }
-}
-
-
-#' checks for and returns filepath to narr.fst file in application-specific site data directory or current working directory
-#' if not found, fails with suggestion to run download_narr_fst()
-narr_fst <- function() {
-  narr_fl_appdir <- fs::path(rappdirs::user_data_dir("addNarrData/geomarker/narr"), "narr.fst")
-  narr_fl_wd <- fs::path(getwd(), "/geomarker/narr/narr.fst")
-
-  if (file.exists(narr_fl_wd)) {
-    message("using narr.fst file at ", narr_fl_wd)
-    return(invisible(narr_fl_wd))
-  }
-
-  if (file.exists(narr_fl_appdir)) {
-    message("using narr.fst file at ", narr_fl_appdir)
-    return(invisible(narr_fl_appdir))
-  }
-
-  stop("narr.fst file not found at\n    ", narr_fl_appdir, "\n    or at\n    ", narr_fl_wd, "\n please call download_narr_fst() to download this file", call. = FALSE)
-}

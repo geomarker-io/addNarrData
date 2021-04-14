@@ -6,7 +6,7 @@
 \alias{addNarrData-package}
 \title{addNarrData: Adds NARR Variables Based on Date and 12 x 12 km Grid Cell}
 \description{
-What the package does (one paragraph).
+Adds NARR weather variables based on date and 12 x 12 km grid cell.
 }
 \seealso{
 Useful links:

@@ -4,16 +4,16 @@
 \alias{get_narr_data}
 \title{get averaged NARR data for NARR cells and start and end dates}
 \usage{
-get_narr_data(d, narr_variables = c("hpbl", "vis", "uwnd.10m",
-  "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc"),
-  narr_fst_filepath = NULL)
+get_narr_data(
+  d,
+  narr_variables = c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m",
+    "prate", "pres.sfc")
+)
 }
 \arguments{
 \item{d}{data.frame with columns 'narr_cell', 'start_date', and 'end_date'}
 
 \item{narr_variables}{a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")}
-
-\item{narr_fst_filepath}{manually specificy a file path to the narr.fst file; normally this would be left unset (defaults to NULL) to use narr.fst in the application data folder (or in the working directory)}
 }
 \value{
 a data.frame identical to the input data.frame but with appended average NARR values
