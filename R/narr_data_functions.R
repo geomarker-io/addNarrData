@@ -29,10 +29,11 @@ download_join_chunks <- function(d_one, narr_product) {
 #' @examples
 #' if (FALSE) {
 #' d <- data.frame(
-#'   id = c(51981, 77553, 52284),
-#'   narr_cell = c(56772, 56772, 57121),
-#'   start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
-#'   end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18"))
+#'   id = c('1a', '2b', '3c'),
+#'   lat = c(39.19674, 39.19674, 39.48765),
+#'   lon = c(-84.582601, -84.582601, -84.610173),
+#'   start_date = as.Date(c("3/8/17", "2/6/12", "6/18/20"), format = "%m/%d/%y"),
+#'   end_date = as.Date(c("3/15/17", "2/13/12", "6/25/20"), format = "%m/%d/%y")
 #' )
 #'
 #' get_narr_data(d, narr_variables = c("air.2m", "rhum.2m"))
@@ -41,7 +42,8 @@ download_join_chunks <- function(d_one, narr_product) {
 get_narr_data <- function(d,
                           narr_variables = c(
                             "hpbl", "vis", "uwnd.10m", "vwnd.10m",
-                            "air.2m", "rhum.2m", "prate", "pres.sfc")
+                            "air.2m", "rhum.2m", "prate", "pres.sfc"),
+                          ...
                           ) {
 
   if (!"narr_cell" %in% colnames(d)) {
