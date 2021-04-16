@@ -44,21 +44,9 @@ Install from [GitHub](https://github.com/) with:
 remotes::install_github("geomarker-io/addNarrData")
 ```
 
-### NARR data files
+## Example Usage
 
-The NARR values are stored in chunk files in an Amazon s3 drive at 
-
-```
-s3://geomarker/narr/narr_chunk_fst/narr_chunk_{number}_{variable}.fst
-```
-
-where `{number}` is replaced with the NARR chunk number  (0 - 9), and `{variable}` is replaced with one of the available NARR variables (`hpbl`, `vis`, `rhum.2m`, `prate`, `air.2m`, `pres.sfc`, `uwnd.10m`, `vwnd.10m`). Each file is about 350 MB in size, but only the files needed will be downloaded.
-
-More information on the NARR fst chunk files can be found at [narr_raster_to_fst](https://github.com/geomarker-io/narr_raster_to_fst#narr_raster_to_fst).
-
-## Example
-
-Get NARR cell numbers.
+add NARR data.
 
 ```{r}
 library(addNarrData)
@@ -69,19 +57,26 @@ d <- tibble::tibble(
   visit_date = c("3/8/17", "2/6/12", "6/18/20"),
   lat = c(39.19674, 39.19674, 39.48765),
   lon = c(-84.582601, -84.582601, -84.610173)
-) %>%
+)
+
+d %>%
   dplyr::mutate(
     visit_date = as.Date(visit_date, format = "%m/%d/%y"),
     start_date = visit_date - lubridate::days(7), # weekly average
     end_date = visit_date
-  )
-
-d_narr_cell <- get_narr_cell_numbers(d)
+    ) %>%
+  get_narr_data(narr_variables = c("air.2m", "rhum.2m"))
 ```
 
-Add NARR data.
+### NARR data files
 
-```{r}
-get_narr_data(d_narr_cell, narr_variables = c('air.2m', 'rhum.2m'))
+The package works by downloading chunks of NARR data automagically. These are stored in an Amazon s3 drive at 
+
 ```
+s3://geomarker/narr/narr_chunk_fst/narr_chunk_{number}_{variable}.fst
+```
+
+where `{number}` is replaced with the NARR chunk number  (0 - 9), and `{variable}` is replaced with one of the available NARR variables (`hpbl`, `vis`, `rhum.2m`, `prate`, `air.2m`, `pres.sfc`, `uwnd.10m`, `vwnd.10m`). Each file is about 350 MB in size, but only the files needed will be downloaded.
+
+More information on the NARR fst chunk files can be found at [narr_raster_to_fst](https://github.com/geomarker-io/narr_raster_to_fst#narr_raster_to_fst).
 

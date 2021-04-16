@@ -20,8 +20,9 @@ download_join_chunks <- function(d_one, narr_product) {
 
 #' get averaged NARR data for NARR cells and start and end dates
 #'
-#' @param d data.frame with columns 'narr_cell', 'start_date', and 'end_date'
+#' @param d data.frame with columns 'lat', 'lon', 'start_date', and 'end_date'
 #' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
+#' @param ... further arguments passed onto s3::s3_get_files
 #'
 #' @return a data.frame identical to the input data.frame but with appended average NARR values
 #'

@@ -28,10 +28,10 @@ d_output <- function() {
 }
 
 test_that("addNarrData adds temp and humidity", {
-  d_narr_cell <- get_narr_cell_numbers(d_input())
 
-  d <- get_narr_data(d_narr_cell,
-                     narr_variables = c('air.2m', 'rhum.2m'))
+  d <- get_narr_data(d_input(),
+                     narr_variables = c('air.2m', 'rhum.2m'),
+                     confirm = FALSE)
   expect_equal(
     d$air.2m,
     d_output()$air.2m,
