@@ -38,7 +38,6 @@ d_output <- function() {
 }
 
 test_that("addNarrData adds temp and humidity", {
-
   d <- get_narr_data(d_input(),
                      narr_variables = c('air.2m', 'rhum.2m'),
                      confirm = FALSE)

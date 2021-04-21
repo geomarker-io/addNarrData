@@ -1,24 +1,4 @@
-#' @import data.table
-
-read_join_chunks <- function(d_one, narr_chunk_path) {
-  message('reading in ', narr_chunk_path, ' and joining to data...')
-  narr_chunk <- fst::read_fst(narr_chunk_path, as.data.table = TRUE)
-  d_out <- merge(data.table::as.data.table(d_one), narr_chunk, by = c("narr_cell", "date"))
-  remove(narr_chunk)
-  return(d_out)
-}
-
-download_join_chunks <- function(d_one, narr_product) {
-  narr_chunk <- unique(d_one$narr_chunk)
-  message('downloading narr fst chunk files for chunk number ', narr_chunk, '...')
-  narr_chunk_path <- glue::glue("s3://geomarker/narr/narr_chunk_fst/narr_chunk_{narr_chunk}_{narr_product}.fst") %>%
-    s3::s3_get_files()
-  d_narr_chunk <- purrr::map(narr_chunk_path$file_path, ~read_join_chunks(d_one, .x))
-  d_narr_chunk <- purrr::reduce(d_narr_chunk, dplyr::left_join)
-  return(tibble::as_tibble(d_narr_chunk))
-}
-
-#' get averaged NARR data for NARR cells and start and end dates
+#' get averaged NARR data for lat, lon, start_date, and end_date
 #'
 #' @param d data.frame with columns 'lat', 'lon', 'start_date', and 'end_date'
 #' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
@@ -38,6 +18,7 @@ download_join_chunks <- function(d_one, narr_product) {
 #'
 #' get_narr_data(d, narr_variables = c("air.2m", "rhum.2m"))
 #' }
+#' @import data.table
 #' @export
 get_narr_data <- function(d,
                           narr_variables = c(
@@ -46,9 +27,8 @@ get_narr_data <- function(d,
                           ...
                           ) {
 
-  if (!"narr_cell" %in% colnames(d)) {
-    stop("input dataframe must have a column called 'narr_cell'")
-  }
+  d <- get_narr_cell_numbers(d)
+
   if (!"start_date" %in% colnames(d)) {
     stop("input dataframe must have a column called 'start_date'")
   }
@@ -57,8 +37,58 @@ get_narr_data <- function(d,
   }
 
   d$narr_chunk <- d$narr_cell %/% 10000
-  d <- dht::expand_dates(d, by = 'day')
-  d_split <- split(d, d$narr_chunk)
 
-  return(purrr::map_dfr(d_split, ~ download_join_chunks(.x, narr_variables)))
+  narr_chunks <-
+    purrr::map(
+      d$narr_chunk,
+      ~ paste(., narr_variables, sep = "_")
+    ) %>%
+    unlist() %>%
+    unique()
+
+  d <-
+    dht::expand_dates(d, by = "day") %>%
+    as.data.table(key = c("narr_cell", "date"))
+
+  d <- dplyr::nest_by(d, narr_chunk)
+
+  d$narr_uris <-
+    purrr::map(
+    d$narr_chunk,
+    ~ glue::glue("s3://geomarker/narr/narr_chunk_fst/narr_chunk_{.}_{narr_variables}.fst")
+  )
+
+  cli::cli_alert_info(c(
+    "{length(unlist(d$narr_uris))} ",
+    "total file{?s} will be required ",
+    "({length(d$narr_chunk)} chunks ",
+    "for {length(narr_variables)} narr variables)"
+  ))
+
+  narr_chunk_files <- s3::s3_get_files(unlist(d$narr_uris), public = TRUE, ...)
+
+  read_and_join <- function(.x, narr_fst_uris) {
+    pb$tick()
+    d_narr <- tibble::tibble(uri = narr_fst_uris)
+    d_narr <- dplyr::left_join(d_narr, narr_chunk_files, by = c("uri"))
+    merged_fst <-
+      purrr::map(d_narr$file_path, fst::read_fst, as.data.table = TRUE) %>%
+      purrr::reduce(data.table::merge.data.table, all.x = TRUE, by = c("narr_cell", "date")) %>%
+      data.table::merge.data.table(x = as.data.table(.x), y = ., all.x = TRUE, by = c("narr_cell", "date"))
+    return(merged_fst)
+    }
+
+    n <- nrow(d)
+
+    pb <- progress::progress_bar$new(
+      total = n,
+      format = " processing :current of :n chunks eta: :eta (elapsed: :elapsed)",
+      clear = FALSE
+    )
+
+    pb$tick(0)
+
+    d$narr_data <- purrr::map2(d$data, d$narr_uris, read_and_join)
+
+  return(dplyr::bind_rows(d$narr_data))
 }

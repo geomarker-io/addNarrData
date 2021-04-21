@@ -35,7 +35,8 @@ Imports:
     raster (>= 3.4-5),
     sf (>= 0.9-7),
     dht,
-    glue (>= 1.4.2)
+    glue (>= 1.4.2),
+    progress
 Remotes:
   degauss-org/dht,
   geomarker-io/s3

@@ -2,32 +2,36 @@
 % Please edit documentation in R/narr_data_functions.R
 \name{get_narr_data}
 \alias{get_narr_data}
-\title{get averaged NARR data for NARR cells and start and end dates}
+\title{get averaged NARR data for lat, lon, start_date, and end_date}
 \usage{
 get_narr_data(
   d,
   narr_variables = c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m",
-    "prate", "pres.sfc")
+    "prate", "pres.sfc"),
+  ...
 )
 }
 \arguments{
-\item{d}{data.frame with columns 'narr_cell', 'start_date', and 'end_date'}
+\item{d}{data.frame with columns 'lat', 'lon', 'start_date', and 'end_date'}
 
 \item{narr_variables}{a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")}
+
+\item{...}{further arguments passed onto s3::s3_get_files}
 }
 \value{
 a data.frame identical to the input data.frame but with appended average NARR values
 }
 \description{
-get averaged NARR data for NARR cells and start and end dates
+get averaged NARR data for lat, lon, start_date, and end_date
 }
 \examples{
 if (FALSE) {
 d <- data.frame(
-  id = c(51981, 77553, 52284),
-  narr_cell = c(56772, 56772, 57121),
-  start_date = as.Date(c("2017-03-01", "2012-01-30", "2013-06-11")),
-  end_date = as.Date(c("2017-03-08", "2012-02-06", "2013-06-18"))
+  id = c('1a', '2b', '3c'),
+  lat = c(39.19674, 39.19674, 39.48765),
+  lon = c(-84.582601, -84.582601, -84.610173),
+  start_date = as.Date(c("3/8/17", "2/6/12", "6/18/20"), format = "\%m/\%d/\%y"),
+  end_date = as.Date(c("3/15/17", "2/13/12", "6/25/20"), format = "\%m/\%d/\%y")
 )
 
 get_narr_data(d, narr_variables = c("air.2m", "rhum.2m"))
