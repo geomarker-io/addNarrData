@@ -76,19 +76,15 @@ get_narr_data <- function(d,
       purrr::reduce(data.table::merge.data.table, all.x = TRUE, by = c("narr_cell", "date")) %>%
       data.table::merge.data.table(x = as.data.table(.x), y = ., all.x = TRUE, by = c("narr_cell", "date"))
     return(merged_fst)
-    }
+  }
 
-    n <- nrow(d)
+  pb <- progress::progress_bar$new(
+    format = "  processing :current of :total chunks eta: :eta",
+    total = nrow(d), clear = FALSE)
 
-    pb <- progress::progress_bar$new(
-      total = n,
-      format = " processing :current of :n chunks eta: :eta (elapsed: :elapsed)",
-      clear = FALSE
-    )
+  pb$tick(0)
 
-    pb$tick(0)
-
-    d$narr_data <- purrr::map2(d$data, d$narr_uris, read_and_join)
+  d$narr_data <- purrr::map2(d$data, d$narr_uris, read_and_join)
 
   return(dplyr::bind_rows(d$narr_data))
 }
