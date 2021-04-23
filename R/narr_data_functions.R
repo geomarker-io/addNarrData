@@ -61,7 +61,7 @@ get_narr_data <- function(d,
   cli::cli_alert_info(c(
     "{length(unlist(d$narr_uris))} ",
     "total file{?s} will be required ",
-    "({length(d$narr_chunk)} chunks ",
+    "({length(d$narr_chunk)} chunk{?s} ",
     "for {length(narr_variables)} narr variables)"
   ))
 
