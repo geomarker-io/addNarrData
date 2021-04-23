@@ -79,7 +79,7 @@ get_narr_data <- function(d,
   }
 
   pb <- progress::progress_bar$new(
-    format = "  processing :current of :total chunks eta: :eta",
+    format = "  processing :current of :total chunks eta: :eta (elapsed: :elapsed)",
     total = nrow(d), clear = FALSE)
 
   pb$tick(0)
