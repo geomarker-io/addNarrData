@@ -62,7 +62,7 @@ get_narr_data <- function(d,
     "{length(unlist(d$narr_uris))} ",
     "total file{?s} will be required ",
     "({length(d$narr_chunk)} chunk{?s} ",
-    "for {length(narr_variables)} narr variables)"
+    "for {length(narr_variables)} narr variable{?s})"
   ))
 
   narr_chunk_files <- s3::s3_get_files(unlist(d$narr_uris), public = TRUE, ...)
