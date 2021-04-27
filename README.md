@@ -9,80 +9,77 @@
 status](https://github.com/geomarker-io/addNarrData/workflows/R-CMD-check/badge.svg)](https://github.com/geomarker-io/addNarrData/actions)
 <!-- badges: end -->
 
-The goal of addNarrData is to add average NARR weather varaibles to your
-geocoded data by matching coordinates to a `narr_cell` (an identifier for 
-a 12 x 12 km NARR grid cell) and `start_date` and `end_date`.
+The goal of addNarrData is to add average NARR weather varaibles to data
+based on `narr_cell` (an identifier for a 12 x 12 km NARR grid cell) and
+`start_date` and `end_date`.
 
-NARR Data Dictionary
-| Variable Name | Description|
-| :-- | :-- |
-| hpbl | Planetary Boundary Layer Height |
-| vis | Visibility |
-| uwnd.10m | U Wind Speed at 10m |
-| vwnd.10m | V Wind Speed at 10m |
-| air.2m | Air Temperature at 2m |
-| rhum.2m | Humidity at 2m |
-| prate | Precipitation Rate |
-| pres.sfc | Surface Pressure |
+NARR Data Dictionary \| Variable Name \| Description\| \| :– \| :– \| \|
+hpbl \| Planetary Boundary Layer Height \| \| vis \| Visibility \| \|
+uwnd.10m \| U Wind Speed at 10m \| \| vwnd.10m \| V Wind Speed at 10m \|
+\| air.2m \| Air Temperature at 2m \| \| rhum.2m \| Humidity at 2m \| \|
+prate \| Precipitation Rate \| \| pres.sfc \| Surface Pressure \|
 
-More information is available at the [NOAA](https://www.ncdc.noaa.gov/sites/default/files/attachments/ncdc-narrdsi-6175-final.pdf) website.
+More information is available at the
+[NOAA](https://www.ncdc.noaa.gov/sites/default/files/attachments/ncdc-narrdsi-6175-final.pdf)
+website.
 
 ## Installation
 
-Install the development version from [GitHub](https://github.com/) with:
+Install from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("remotes")
 remotes::install_github("geomarker-io/addNarrData")
 ```
 
-### NARR database file
+## Example Usage
 
-The NARR values are stored in `narr.fst` (20 GB in size), which can
-either be located in the working directory, or preferably within the
-platform-specific user data directory so it can be shared across R
-sessions and projects. If needed, you will be prompted to run
-`download_narr_fst()` the first time you call `get_narr_data()`. This 22
-GB file is a large file to download, but will only need to be done once
-per user and computer.
-
-## Example
-
-Get NARR cell numbers.
+add NARR data.
 
 ``` r
 library(addNarrData)
 library(magrittr)
+#> 
+#> Attaching package: 'magrittr'
+#> The following objects are masked from 'package:testthat':
+#> 
+#>     equals, is_less_than, not
 
 d <- tibble::tibble(
   id = c('1a', '2b', '3c'),
   visit_date = c("3/8/17", "2/6/12", "6/18/20"),
   lat = c(39.19674, 39.19674, 39.48765),
   lon = c(-84.582601, -84.582601, -84.610173)
-) %>%
+)
+
+d %>%
   dplyr::mutate(
     visit_date = as.Date(visit_date, format = "%m/%d/%y"),
     start_date = visit_date - lubridate::days(7), # weekly average
     end_date = visit_date
-  )
-
-d_narr_cell <- get_narr_cell_numbers(d)
+    ) %>%
+  get_narr_data(narr_variables = c("air.2m", "rhum.2m"))
+#> ℹ 2 total files will be required
+#> ℹ all files already exist
+#> reading and joining each file...
+#> 0 of 2 done
+#> 1 of 2 done
+#> 2 of 2 done
+#> # A tibble: 0 x 0
 ```
 
-Add NARR data.
+### NARR data files
 
-``` r
-download_narr_fst()
-```
+The package works by downloading chunks of NARR data automagically.
+These are stored in an Amazon s3 drive at
 
-``` r
-get_narr_data(d_narr_cell, narr_variables = c('air.2m', 'rhum.2m'))
-#> using narr.fst file at ~/Library/Application Support/addNarrData/geomarker/narr/narr.fst
-#> # A tibble: 3 x 9
-#>   id    visit_date   lat   lon start_date end_date   narr_cell air.2m
-#>   <chr> <date>     <dbl> <dbl> <date>     <date>         <dbl>  <dbl>
-#> 1 3c    2020-06-18  39.5 -84.6 2020-06-11 2020-06-18     56423   292.
-#> 2 1a    2017-03-08  39.2 -84.6 2017-03-01 2017-03-08     56772   279.
-#> 3 2b    2012-02-06  39.2 -84.6 2012-01-30 2012-02-06     56772   279.
-#> # … with 1 more variable: rhum.2m <dbl>
-```
+    s3://geomarker/narr/narr_chunk_fst/narr_chunk_{number}_{variable}.fst
+
+where `{number}` is replaced with the NARR chunk number (0 - 9), and
+`{variable}` is replaced with one of the available NARR variables
+(`hpbl`, `vis`, `rhum.2m`, `prate`, `air.2m`, `pres.sfc`, `uwnd.10m`,
+`vwnd.10m`). Each file is about 350 MB in size, but only the files
+needed will be downloaded.
+
+More information on the NARR fst chunk files can be found at
+[narr\_raster\_to\_fst](https://github.com/geomarker-io/narr_raster_to_fst#narr_raster_to_fst).

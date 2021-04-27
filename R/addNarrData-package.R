@@ -8,4 +8,6 @@
 NULL
 
 ## quiets concerns of R CMD check around pipeline variables
-if (getRversion() >= "2.15.1") utils::globalVariables(c("row_index", "data", "date_seq"))
+if (getRversion() >= "2.15.1") utils::globalVariables(c("row_index", "data", "date_seq",
+                                                        "lat", "lon", ".rows", ".",
+                                                        "narr_chunk", "read_and_join"))

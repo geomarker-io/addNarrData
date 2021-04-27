@@ -1,8 +1,6 @@
-^addNarrData\.Rproj$
-^\.Rproj\.user$
-^renv$
-^renv\.lock$
+^s3_downloads$
+^.github$
+^.Rproj$
 ^LICENSE\.md$
 ^README\.Rmd$
-^narr\.fst$
-^\.github$
+^addNarrData\.Rproj$
