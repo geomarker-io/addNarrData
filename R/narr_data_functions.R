@@ -27,6 +27,10 @@ get_narr_data <- function(d,
                           ...
                           ) {
 
+  d$row_index <- 1:nrow(d)
+  d_missing_coords <- filter(d, is.na(lat), is.na(lon))
+  d <- filter(d, !is.na(lat), !is.na(lon))
+
   d <- get_narr_cell_numbers(d)
 
   if (!"start_date" %in% colnames(d)) {
@@ -88,6 +92,10 @@ get_narr_data <- function(d,
   pb$tick(0)
 
   d$narr_data <- purrr::map2(d$data, d$narr_uris, read_and_join)
+  out <- dplyr::bind_rows(d$narr_data)
+  out <- dplyr::bind_rows(d_missing_coords, out) %>%
+    dplyr::arrange(row_index) %>%
+    dplyr::select(-row_index)
 
-  return(dplyr::bind_rows(d$narr_data))
+  return(out)
 }
