@@ -28,8 +28,8 @@ get_narr_data <- function(d,
                           ) {
 
   d$row_index <- 1:nrow(d)
-  d_missing_coords <- filter(d, is.na(lat), is.na(lon))
-  d <- filter(d, !is.na(lat), !is.na(lon))
+  d_missing_coords <- d %>% dplyr::filter(is.na(lat), is.na(lon))
+  d <- dplyr::filter(d, !is.na(lat), !is.na(lon))
 
   d <- get_narr_cell_numbers(d)
 
