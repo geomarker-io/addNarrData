@@ -35,6 +35,9 @@ get_narr_data <- function(d,
   if (!"end_date" %in% colnames(d)) {
     stop("input dataframe must have a column called 'end_date'")
   }
+  if(TRUE %in% (d$start_date < "2000-01-01" | d$end_date > "2020-12-31")) {
+    cli::cli_alert_warning("NARR data is available for years 2000 - 2020; Data will be missing for dates outside this range.")
+  }
 
   d$narr_chunk <- d$narr_cell %/% 10000
 
