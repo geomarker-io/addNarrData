@@ -1,6 +1,6 @@
 Package: addNarrData
 Title: Adds NARR Variables Based on Date and 12 x 12 km Grid Cell
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
             person("Erika", "Rasnick", email = "erika.rasnick@cchmc.org",
                   role = c("aut", "cre")),

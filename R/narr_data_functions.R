@@ -1,6 +1,8 @@
 #' get averaged NARR data for lat, lon, start_date, and end_date
 #'
 #' @param d data.frame with columns 'lat', 'lon', 'start_date', and 'end_date'
+#' @param type type of input data. either 'coords' if starting from lat and lon columns, or 'narr_cell'
+#'             if starting from narr cell ids.
 #' @param narr_variables a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")
 #' @param ... further arguments passed onto s3::s3_get_files
 #'
@@ -20,7 +22,7 @@
 #' }
 #' @import data.table
 #' @export
-get_narr_data <- function(d,
+get_narr_data <- function(d, type = 'coords',
                           narr_variables = c(
                             "hpbl", "vis", "uwnd.10m", "vwnd.10m",
                             "air.2m", "rhum.2m", "prate", "pres.sfc"),
@@ -28,10 +30,16 @@ get_narr_data <- function(d,
                           ) {
 
   d$row_index <- 1:nrow(d)
-  d_missing_coords <- d %>% dplyr::filter(is.na(lat), is.na(lon))
-  d <- dplyr::filter(d, !is.na(lat), !is.na(lon))
 
-  d <- get_narr_cell_numbers(d)
+  if (type == 'narr_cell') {
+    dht::check_for_column(d, 'narr_cell', d$narr_cell, 'numeric')
+    d_missing <- d %>% dplyr::filter(is.na(narr_cell))
+    d <- dplyr::filter(d, !is.na(narr_cell))
+  } else {
+    d_missing <- d %>% dplyr::filter(is.na(lat), is.na(lon))
+    d <- dplyr::filter(d, !is.na(lat), !is.na(lon))
+    d <- get_narr_cell_numbers(d)
+  }
 
   if (!"start_date" %in% colnames(d)) {
     stop("input dataframe must have a column called 'start_date'")
@@ -93,7 +101,7 @@ get_narr_data <- function(d,
 
   d$narr_data <- purrr::map2(d$data, d$narr_uris, read_and_join)
   out <- dplyr::bind_rows(d$narr_data)
-  out <- dplyr::bind_rows(d_missing_coords, out) %>%
+  out <- dplyr::bind_rows(d_missing, out) %>%
     dplyr::arrange(row_index) %>%
     dplyr::select(-row_index)
 

@@ -6,6 +6,7 @@
 \usage{
 get_narr_data(
   d,
+  type = "coords",
   narr_variables = c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m",
     "prate", "pres.sfc"),
   ...
@@ -13,6 +14,9 @@ get_narr_data(
 }
 \arguments{
 \item{d}{data.frame with columns 'lat', 'lon', 'start_date', and 'end_date'}
+
+\item{type}{type of input data. either 'coords' if starting from lat and lon columns, or 'narr_cell'
+if starting from narr cell ids.}
 
 \item{narr_variables}{a character string of desired narr variables; a subset of c("hpbl", "vis", "uwnd.10m", "vwnd.10m", "air.2m", "rhum.2m", "prate", "pres.sfc")}
 

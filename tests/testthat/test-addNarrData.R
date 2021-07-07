@@ -46,3 +46,33 @@ test_that("addNarrData adds temp and humidity", {
     tolerance = 0.0004
   )
 })
+
+d_input_cell <- function() {
+  tibble::tibble(
+    id = c('1a', '2b', '3c'),
+    visit_date = c("3/8/17", "2/6/12", "6/18/20"),
+    narr_cell = c('56772', '56772', '60512')
+  ) %>%
+    dplyr::mutate(
+      visit_date = as.Date(visit_date, format = "%m/%d/%y"),
+      start_date = visit_date - lubridate::days(7), # weekly average
+      end_date = visit_date,
+      narr_cell = as.numeric(narr_cell)
+    )
+}
+
+test_that("addNarrData adds temp and humidity", {
+  d <- get_narr_data(d_input_cell(), type = 'narr_cell',
+                     narr_variables = c('air.2m', 'rhum.2m'),
+                     confirm = FALSE)
+  expect_equal(
+    d$air.2m,
+    d_output()$air.2m,
+    tolerance = 0.0004
+  )
+  expect_equal(
+    d$rhum.2m,
+    d_output()$rhum.2m,
+    tolerance = 0.0004
+  )
+})
