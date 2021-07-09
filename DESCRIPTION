@@ -34,7 +34,7 @@ Imports:
     withr (>= 2.2.0),
     raster (>= 3.4-5),
     sf (>= 0.9-7),
-    dht,
+    dht (>= 0.0.4),
     glue (>= 1.4.2),
     progress
 Remotes:
