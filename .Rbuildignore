@@ -5,3 +5,4 @@
 ^README\.Rmd$
 ^addNarrData\.Rproj$
 ^\.Rproj\.user$
+^\.github$
