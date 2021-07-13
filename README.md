@@ -7,6 +7,7 @@
 
 [![R build
 status](https://github.com/geomarker-io/addNarrData/workflows/R-CMD-check/badge.svg)](https://github.com/geomarker-io/addNarrData/actions)
+[![R-CMD-check](https://github.com/geomarker-io/addNarrData/workflows/R-CMD-check/badge.svg)](https://github.com/geomarker-io/addNarrData/actions)
 <!-- badges: end -->
 
 The goal of addNarrData is to add average NARR weather varaibles to data
