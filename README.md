@@ -1,3 +1,4 @@
+> 🛑 This package is no longer actively developed. Use the appc package to access NARR data: https://github.com/geomarker-io/appc
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
